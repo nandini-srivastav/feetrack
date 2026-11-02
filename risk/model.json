@@ -1,0 +1,54 @@
+{
+  "version": "v20261102",
+  "kind": "logistic_regression",
+  "trained_on": "synthetic population (n=4000) \u2014 replace with real withdrawals",
+  "intercept": -3.4834131066567178,
+  "coefficients": {
+    "overdue_months": 1.4771375807358202,
+    "missed_instalments": 0.7825257077210941,
+    "attendance_gap": 3.8597982942772573,
+    "attendance_drop": 2.7731615311191984,
+    "score_drop": 1.9032522625259765
+  },
+  "feature_means": {
+    "overdue_months": 0.3192175939167906,
+    "missed_instalments": 0.4673333333333333,
+    "attendance_gap": 0.1508615518094983,
+    "attendance_drop": 0.03764434099007582,
+    "score_drop": 0.02103321879501313
+  },
+  "threshold": 0.4,
+  "metrics": {
+    "test_auc": 0.872,
+    "precision_at_threshold": 0.714,
+    "recall_at_threshold": 0.628,
+    "base_rate": 0.182
+  },
+  "threshold_table": [
+    {
+      "threshold": 0.3,
+      "flag_rate": 0.181,
+      "precision": 0.685,
+      "recall": 0.678
+    },
+    {
+      "threshold": 0.4,
+      "flag_rate": 0.161,
+      "precision": 0.714,
+      "recall": 0.628
+    },
+    {
+      "threshold": 0.5,
+      "flag_rate": 0.143,
+      "precision": 0.741,
+      "recall": 0.579
+    },
+    {
+      "threshold": 0.6,
+      "flag_rate": 0.116,
+      "precision": 0.81,
+      "recall": 0.514
+    }
+  ],
+  "threshold_reason": "A false flag costs one counsellor call; a missed dropout costs the rest of the year's fee and a student. 0.4 trades some precision for recall."
+}

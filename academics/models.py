@@ -27,6 +27,7 @@ class WeeklyAttendance(models.Model):
 
 
 class TestScore(models.Model):
+    __test__ = False  # not a pytest class
     student = models.ForeignKey("fees.Student", on_delete=models.CASCADE, related_name="scores")
     test_name = models.CharField(max_length=80)
     test_date = models.DateField()
