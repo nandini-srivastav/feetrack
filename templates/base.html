@@ -1,0 +1,15 @@
+{% load static %}<!doctype html>
+<html lang="{% block lang %}en{% endblock %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{% block title %}FeeTrack{% endblock %} · FeeTrack</title>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+<script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+{% block body %}{% endblock %}
+</body>
+</html>

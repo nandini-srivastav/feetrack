@@ -1,0 +1,36 @@
+{% extends "parents/base.html" %}
+{% load ui %}
+{% block title %}{{ t.tab_progress }}{% endblock %}
+{% block content %}
+{% include "parents/_child.html" %}
+{% if not weeks and not tests %}
+  <div class="empty"><strong>{{ t.no_progress }}</strong></div>
+{% endif %}
+{% if weeks %}
+<section class="stack" style="--gap:12px" aria-labelledby="att-head">
+  <div class="row between" style="align-items:baseline">
+    <h2 id="att-head" style="font-size:16px">{{ t.attendance }} · {{ t.last_4_weeks }}</h2>
+    {% if pct is not None %}<strong style="font-size:28px" class="num">{{ pct }}%</strong>{% endif %}
+  </div>
+  <div class="week-bars" style="--n:{{ weeks|length }}" role="img" aria-label="{{ t.attendance }}: {% for w in weeks %}{{ w.week_start|date:'j M' }} {{ w.percent }}%{% if not forloop.last %}, {% endif %}{% endfor %}">
+    {% for w in weeks %}
+      <div {% if forloop.last %}class="last"{% endif %}><span>{{ w.percent }}%</span><i style="height:calc({{ w.percent }}% - 22px)"></i></div>
+    {% endfor %}
+  </div>
+  <div class="week-bars" style="--n:{{ weeks|length }};height:auto" aria-hidden="true">
+    {% for w in weeks %}<div>{{ w.week_start|date:"j M" }}</div>{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% if tests %}
+<section aria-labelledby="t-head">
+  <h2 id="t-head" style="font-size:16px;margin-bottom:4px">{{ t.tests }}</h2>
+  {% for s in tests %}
+    <div class="line-item">
+      <div><p style="font-weight:500">{{ s.test_name }}</p><p class="muted small">{{ s.test_date|date:"j M" }}{% if s.batch_avg %} · {{ t.batch_avg }} {{ s.batch_avg|floatformat:0 }}{% endif %}</p></div>
+      <strong class="num" style="font-size:17px">{{ s.score|floatformat:0 }}<span class="muted small" style="font-weight:400"> / {{ s.max_score|floatformat:0 }}</span></strong>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

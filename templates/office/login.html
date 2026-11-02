@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Staff sign in{% endblock %}
+{% block body %}
+<main id="main" class="center-wrap">
+  <form method="post" class="auth card card-pad stack" style="--gap:16px" novalidate>
+    {% csrf_token %}
+    <div class="row" style="--gap:10px"><span class="logo" aria-hidden="true">A</span><strong>FeeTrack · Staff</strong></div>
+    <h1>Sign in</h1>
+    {% if form.non_field_errors %}<div class="alert alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+    <div class="field"><label for="id_username">Username</label><input class="input" id="id_username" name="username" autocomplete="username" required value="{{ form.username.value|default:'' }}"></div>
+    <div class="field"><label for="id_password">Password</label><input class="input" id="id_password" type="password" name="password" autocomplete="current-password" required></div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn btn-primary" type="submit">Sign in</button>
+    <a class="small" href="{% url 'parents:login' %}">I'm a parent</a>
+  </form>
+</main>
+{% endblock %}

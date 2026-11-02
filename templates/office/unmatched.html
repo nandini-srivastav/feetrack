@@ -1,0 +1,31 @@
+{% extends "office/base.html" %}
+{% load ui %}
+{% block title %}Unmatched payments{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Unmatched payments</h1><p class="muted small">Money received that could not be tied safely to an instalment. Nothing here is marked paid until you confirm a match.</p></div></div>
+<section class="card">
+  <div class="card-head"><h2>Open · {{ open|length }}</h2></div>
+  {% for u in open %}
+  <div class="card-pad row between" style="border-top:{% if not forloop.first %}1px solid #EEF0F2{% else %}0{% endif %}">
+    <div class="grow">
+      <div><strong class="num">{{ u.amount|inr }}</strong> · {{ u.get_method_display }} · {{ u.received_on|date:"j M" }}{% if u.note %} · note “{{ u.note }}”{% endif %}{% if u.reference %} <span class="muted small">ref {{ u.reference }}</span>{% endif %}</div>
+      <div class="small muted" style="margin-top:2px">{{ u.reason }}{% if u.suggested_student %} — suggested: <strong style="color:var(--ink)">{{ u.suggested_student.name }} {{ u.suggested_student.student_id }}</strong>{% if u.suggestion_reason %} ({{ u.suggestion_reason|lower }}){% endif %}{% endif %}</div>
+    </div>
+    <form method="post" action="{% url 'office:unmatched_resolve' u.pk %}" class="row" style="--gap:8px" data-confirm="Apply {{ u.amount|inr }} to this student and issue a receipt?">
+      {% csrf_token %}
+      <label class="sr-only" for="sid-{{ u.pk }}">Student ID</label>
+      <input class="input" id="sid-{{ u.pk }}" name="student_id" style="width:140px" placeholder="STU-0000" value="{{ u.suggested_student.student_id|default:'' }}" required>
+      <button class="btn {% if u.suggested_student %}btn-primary{% endif %} btn-sm" type="submit">{% if u.suggested_student %}Confirm match{% else %}Assign{% endif %}</button>
+    </form>
+  </div>
+  {% empty %}<div class="empty"><strong>Queue is clear</strong>Every payment received has been matched.</div>{% endfor %}
+</section>
+{% if resolved %}
+<section class="card">
+  <div class="card-head"><h2>Recently resolved</h2></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Amount</th><th>Matched to</th><th>By</th><th>When</th></tr></thead><tbody>
+  {% for u in resolved %}<tr><td class="num">{{ u.amount|inr }}</td><td>{% if u.resolved_payment %}<a class="rowlink" href="{% url 'office:ledger' u.resolved_payment.student.student_id %}">{{ u.resolved_payment.student.name }}</a>{% else %}{{ u.get_status_display }}{% endif %}</td><td class="small">{{ u.resolved_by.display_name }}</td><td class="small">{{ u.resolved_at|date:"j M, H:i" }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endif %}
+{% endblock %}

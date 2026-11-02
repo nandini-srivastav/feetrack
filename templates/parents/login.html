@@ -1,0 +1,20 @@
+{% extends "parents/base.html" %}
+{% block title %}{{ t.login_title }}{% endblock %}
+{% block content %}
+<div class="stack" style="--gap:8px;margin-top:24px">
+  <h1>{{ t.login_title }}</h1>
+  <p class="muted">{{ t.login_sub }}</p>
+</div>
+<form method="post" class="stack" novalidate>
+  {% csrf_token %}
+  <div class="field">
+    <label for="phone">{{ t.phone_label }}</label>
+    <input class="input input-lg" id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14"
+           value="{{ phone }}" placeholder="98XXXXXXXX" required {% if error %}aria-invalid="true" aria-describedby="phone-err"{% endif %} autofocus>
+    {% if error %}<p class="error" id="phone-err" role="alert">{{ error }}</p>{% endif %}
+  </div>
+  <button class="btn btn-primary btn-lg" type="submit">{{ t.send_code }}</button>
+</form>
+{% if DEMO_MODE %}<p class="demo-note">Demo parent numbers: 9876500587 (Ishita, Hindi), 9876500412 (Aarav, English), 9876500219 (Mohit).</p>{% endif %}
+<p class="small" style="margin-top:auto"><a href="{% url 'landing' %}">← Company A · FeeTrack</a></p>
+{% endblock %}

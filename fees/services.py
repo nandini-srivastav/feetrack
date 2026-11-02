@@ -18,6 +18,7 @@ from django.db.models import F, Sum
 from django.utils import timezone
 
 from core import audit
+from core.money import format_inr
 from fees import rules
 from fees.models import (
     Allocation, FeePlan, GatewayEvent, Instalment, Payment, PaymentLink, Receipt, ReceiptCounter,
@@ -117,7 +118,7 @@ def apply_payment(*, student: Student, amount: Decimal, method: str, source: str
     allocations, leftover = rules.allocate_oldest_first(
         amount, [rules.OpenInstalment(i.pk, i.due_date, i.balance) for i in open_items])
     if leftover > 0:
-        raise PaymentError(f"Payment is ₹{leftover} more than the balance owed.")
+        raise PaymentError(f"Payment is {format_inr(leftover)} more than the balance owed.")
 
     payment = Payment.objects.create(student=student, amount=amount, method=method, source=source,
                                      reference=reference, received_on=received_on, recorded_by=recorded_by)
@@ -216,7 +217,7 @@ def process_gateway_event(payload: dict) -> GatewayOutcome:
         elif link.status != PaymentLink.Status.ACTIVE:
             reason = f"Link already {link.get_status_display().lower()}"
         elif amount != link.amount:
-            reason = f"Amount ₹{amount} differs from the link amount ₹{link.amount}"
+            reason = f"Amount {format_inr(amount)} differs from the link amount {format_inr(link.amount)}"
         elif amount > link.instalment.balance:
             reason = "Amount is more than the instalment balance"
 

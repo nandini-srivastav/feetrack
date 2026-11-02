@@ -42,6 +42,7 @@ class OutboundMessage(models.Model):
         REMINDER = "reminder", "Reminder"
         RECEIPT = "receipt", "Receipt"
 
+    student = models.ForeignKey("fees.Student", null=True, blank=True, on_delete=models.SET_NULL, related_name="messages")
     to_phone = models.CharField(max_length=15)
     language = models.CharField(max_length=2)
     kind = models.CharField(max_length=10, choices=Kind.choices)

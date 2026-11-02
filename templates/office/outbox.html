@@ -1,0 +1,15 @@
+{% extends "office/base.html" %}
+{% block title %}Messages sent{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Messages sent</h1><p class="muted small">SMS / WhatsApp sending is mocked: this is what parents would receive.</p></div></div>
+<section class="card">
+  {% if page_obj.object_list %}
+  <div class="table-wrap"><table class="table"><thead><tr><th>When</th><th>Student</th><th>Type</th><th>Message</th></tr></thead><tbody>
+  {% for m in page_obj %}<tr><td class="small" style="white-space:nowrap">{{ m.created_at|date:"j M, H:i" }}{% if m.reminder %}<div class="muted">for {{ m.reminder.send_on|date:"j M" }}</div>{% endif %}</td>
+    <td>{% if m.student %}<a class="rowlink" href="{% url 'office:ledger' m.student.student_id %}">{{ m.student.name }}</a>{% endif %}<div class="small muted">{{ m.to_phone }}</div></td>
+    <td><span class="badge badge-neutral">{{ m.get_kind_display }}</span></td><td class="small" lang="{{ m.language }}">{{ m.body }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if page_obj.has_other_pages %}<nav class="card-head" aria-label="Pages"><span class="small muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span><span class="row" style="--gap:8px">{% if page_obj.has_previous %}<a class="btn btn-sm" href="?page={{ page_obj.previous_page_number }}">Newer</a>{% endif %}{% if page_obj.has_next %}<a class="btn btn-sm" href="?page={{ page_obj.next_page_number }}">Older</a>{% endif %}</span></nav>{% endif %}
+  {% else %}<div class="empty"><strong>No messages yet</strong></div>{% endif %}
+</section>
+{% endblock %}

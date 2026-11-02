@@ -1,0 +1,41 @@
+{% extends "parents/base.html" %}
+{% load ui %}
+{% block title %}{{ t.receipts }}{% endblock %}
+{% block content %}
+{% if event.outcome == 'applied' or event.outcome == 'duplicate' and receipt %}
+  <section class="stack" style="--gap:10px;align-items:center;text-align:center;padding-top:12px">
+    <div class="ok-dot"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></div>
+    <h1 style="font-size:30px">{{ t.paid_title|fill:amount }}</h1>
+    <p class="muted">{{ student.name }} · {{ t.pay_for|fill:link.instalment.number }}</p>
+  </section>
+  <div class="alert alert-success" role="status">{% if link.instalment.balance == 0 %}{{ t.paid_sub }}{% else %}{{ t.paid_part }}{% endif %}</div>
+  {% if receipt %}
+  <section class="card card-pad stack" style="--gap:10px">
+    <div class="kv"><span>{{ t.receipt_no }}</span><strong>{{ receipt.number }}</strong></div>
+    <div class="hr"></div>
+    <div class="kv"><span>{{ t.taxable }}</span><span class="num">{{ receipt.taxable_value|inr2 }}</span></div>
+    <div class="kv"><span>CGST 9%</span><span class="num">{{ receipt.cgst|inr2 }}</span></div>
+    <div class="kv"><span>SGST 9%</span><span class="num">{{ receipt.sgst|inr2 }}</span></div>
+    <div class="hr"></div>
+    <div class="kv" style="font-size:16px;font-weight:600"><span style="color:var(--ink)">{{ t.total }}</span><span class="num">{{ receipt.total|inr2 }}</span></div>
+    {% if student.batch.centre.gstin %}<p class="muted small">GSTIN {{ student.batch.centre.gstin }}</p>{% endif %}
+  </section>
+  {% endif %}
+  {% if request.user.is_authenticated and receipt %}<a class="btn btn-primary btn-lg" href="{% url 'parents:receipt_pdf' receipt.number %}">{{ t.download }}</a>{% endif %}
+  <a class="btn btn-lg" href="{% url 'parents:home' %}">{{ t.back_to_dues }}</a>
+{% elif event.outcome == 'unmatched' %}
+  <section class="stack" style="--gap:10px;padding-top:12px">
+    <h1>{{ t.unmatched_title }}</h1>
+    <p class="num" style="font-size:22px;font-weight:600">{{ amount }}</p>
+    <p class="muted">{{ t.unmatched_sub }}</p>
+  </section>
+  <a class="btn btn-lg" href="{% url 'parents:home' %}">{{ t.back_to_dues }}</a>
+{% else %}
+  <section class="stack" style="--gap:10px;padding-top:12px">
+    <h1>{{ t.failed_title }}</h1>
+    <p class="muted">{{ t.failed_sub }}</p>
+  </section>
+  <a class="btn btn-primary btn-lg" href="{% url 'pay' link.token %}">{{ t.try_again }}</a>
+  <a class="btn btn-lg" href="{% url 'parents:home' %}">{{ t.back_to_dues }}</a>
+{% endif %}
+{% endblock %}

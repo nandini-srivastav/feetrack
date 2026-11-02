@@ -1,0 +1,35 @@
+{% extends "office/base.html" %}
+{% load ui %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Students</h1><p class="muted small">{{ total }} shown · most overdue first</p></div></div>
+<form method="get" class="card card-pad form-grid" data-no-busy role="search">
+  <div class="field"><label for="q">Name or ID</label><input class="input" id="q" name="q" value="{{ q }}" placeholder="e.g. Ishita or STU-0587"></div>
+  <div class="field"><label for="batch">Batch</label><select class="input" id="batch" name="batch"><option value="">All batches</option>{% for b in batches %}<option value="{{ b.pk }}" {% if b.pk|stringformat:"s" == batch_id %}selected{% endif %}>{{ b.name }}{% if request.user.sees_all_centres %} · {{ b.centre.code }}{% endif %}</option>{% endfor %}</select></div>
+  <div class="field"><label for="status">Show</label><select class="input" id="status" name="status"><option value="">All active</option>{% for k, v in status_filters.items %}<option value="{{ k }}" {% if k == status %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="field" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Filter</button></div>
+</form>
+<section class="card">
+  {% if page_obj.object_list %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Student</th><th>Batch</th><th class="right">Balance</th><th class="right">Overdue</th><th>Status</th></tr></thead>
+    <tbody>{% for r in page_obj %}<tr {% if r.days %}class="is-warn"{% endif %}>
+      <td><a class="rowlink" href="{% url 'office:ledger' r.s.student_id %}">{{ r.s.name }}</a><div class="small muted">{{ r.s.student_id }}</div></td>
+      <td>{{ r.s.batch.name }}{% if request.user.sees_all_centres %}<div class="small muted">{{ r.s.batch.centre.name }}</div>{% endif %}</td>
+      <td class="right num">{{ r.balance|inr }}</td>
+      <td class="right num">{% if r.overdue %}{{ r.overdue|inr }}{% else %}—{% endif %}</td>
+      <td>{% if r.s.status == 'withdrawn' %}<span class="badge badge-neutral">Withdrawn</span>
+          {% elif r.days %}<span class="badge badge-warn">{{ r.days }} days overdue</span>
+          {% elif r.due_soon %}<span class="badge badge-info">Due {{ r.next|date:"j M" }}</span>
+          {% elif r.balance %}<span class="badge badge-neutral">Up to date</span>
+          {% else %}<span class="badge badge-ok">Fully paid</span>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% if page_obj.has_other_pages %}<nav class="card-head" aria-label="Pages"><span class="small muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span><span class="row" style="--gap:8px">
+    {% if page_obj.has_previous %}<a class="btn btn-sm" href="?q={{ q|urlencode }}&batch={{ batch_id|default:'' }}&status={{ status }}&page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}<a class="btn btn-sm" href="?q={{ q|urlencode }}&batch={{ batch_id|default:'' }}&status={{ status }}&page={{ page_obj.next_page_number }}">Next</a>{% endif %}</span></nav>{% endif %}
+  {% else %}
+  <div class="empty"><strong>No students match</strong>Try a different name, batch or filter.</div>
+  {% endif %}
+</section>
+{% endblock %}

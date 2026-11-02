@@ -33,6 +33,12 @@ def lakh(value):
 
 
 @register.filter
+def fill(text, value):
+    """Fill the {n} / {amount} placeholder in translated copy."""
+    return str(text).replace("{n}", str(value)).replace("{amount}", str(value))
+
+
+@register.filter
 def get(mapping, key):
     try:
         return mapping.get(key)

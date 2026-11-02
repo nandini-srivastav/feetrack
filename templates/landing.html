@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block body %}
+<main id="main" class="center-wrap">
+  <div class="auth stack" style="--gap:20px">
+    <div class="row" style="--gap:10px"><span class="logo" aria-hidden="true">A</span><strong>Company A · FeeTrack</strong></div>
+    <h1>Fees, receipts and progress in one place</h1>
+    <a class="btn btn-primary btn-lg" href="{% url 'parents:login' %}">अभिभावक लॉगिन · Parent sign in</a>
+    <a class="btn btn-lg" href="{% url 'office:login' %}">Staff sign in</a>
+    {% if DEMO_MODE %}<p class="demo-note">Demo mode: data is sample data and today is set to {{ TODAY|date:"j M Y" }}. Messages are not really sent; see the outbox in the staff area.</p>{% endif %}
+  </div>
+</main>
+{% endblock %}

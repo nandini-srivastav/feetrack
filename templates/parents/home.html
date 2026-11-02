@@ -1,0 +1,54 @@
+{% extends "parents/base.html" %}
+{% load ui %}
+{% block title %}{{ t.tab_dues }}{% endblock %}
+{% block content %}
+{% include "parents/_child.html" %}
+
+{% if child.status == 'withdrawn' %}
+  <section class="due-card">
+    <span class="badge badge-neutral" style="align-self:flex-start">{{ t.withdrawn }}</span>
+    <p>{{ t.withdrawn_sub }}</p>
+  </section>
+{% elif not focus %}
+  <section class="due-card" style="align-items:center;text-align:center">
+    <div class="ok-dot"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></div>
+    <h2 style="font-size:20px">{{ t.all_paid }}</h2>
+    <p class="muted">{{ t.all_paid_sub }}</p>
+  </section>
+{% else %}
+  <section class="due-card" aria-labelledby="due-label">
+    <p id="due-label" class="muted">{{ t.amount_due }}</p>
+    <p class="due-amount num">{{ focus.balance|inr }}</p>
+    <div class="stack" style="--gap:8px">
+      <p>{{ t.due_on }}: {{ focus.due_date|date:"j M Y" }}</p>
+      {% if state.is_overdue %}
+        <span class="badge badge-warn" style="align-self:flex-start;font-size:14px;padding:6px 12px">{{ t.days_late|fill:state.days_overdue }}</span>
+      {% elif state.days_until_due == 0 %}
+        <span class="badge badge-info" style="align-self:flex-start;font-size:14px;padding:6px 12px">{{ t.due_today }}</span>
+      {% else %}
+        <span class="badge badge-neutral" style="align-self:flex-start;font-size:14px;padding:6px 12px">{{ t.due_in|fill:state.days_until_due }}</span>
+      {% endif %}
+    </div>
+    {% if link %}
+      <a class="btn btn-primary btn-lg" href="{% url 'pay' link.token %}">{% with amt=link.amount|inr %}{{ t.pay|fill:amt }}{% endwith %}</a>
+      <p class="muted small" style="text-align:center">{{ t.pay_note }}</p>
+    {% endif %}
+  </section>
+
+  {% if later %}
+  <section class="line-item">
+    <div><p class="muted small">{{ t.next }}</p><p style="font-weight:500">{{ later.due_date|date:"j M Y" }}</p></div>
+    <strong class="num">{{ later.balance|inr }}</strong>
+  </section>
+  {% endif %}
+{% endif %}
+
+<section class="kv" style="padding:0 2px">
+  <span>{{ t.paid_year }}</span><span class="num" style="font-weight:500">{{ sum.paid|inr }} / {{ sum.total|inr }}</span>
+</section>
+
+<div class="stack" style="--gap:10px;margin-top:auto">
+  <p class="muted small">{{ t.help }}: {{ child.batch.centre.name }}{% if child.batch.centre.phone %} · <a href="tel:{{ child.batch.centre.phone }}">{{ child.batch.centre.phone }}</a>{% endif %}</p>
+  <form method="post" action="{% url 'parents:logout' %}" data-no-busy>{% csrf_token %}<button class="btn-link btn" type="submit">{{ t.sign_out }}</button></form>
+</div>
+{% endblock %}

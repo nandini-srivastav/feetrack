@@ -1,0 +1,24 @@
+{% extends "office/base.html" %}
+{% block title %}Demo controls{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Demo controls</h1><p class="muted small">Only shown when DEMO_MODE is on. In production the daily jobs run on a schedule and today is the real date.</p></div></div>
+<div class="split">
+  <section class="card card-pad stack">
+    <h2>Today is {{ TODAY|date:"l j M Y" }}</h2>
+    <form method="post" class="row" style="align-items:flex-end">{% csrf_token %}
+      <div class="field"><label for="id_date">Set date</label>{{ form.date }}</div>
+      <button class="btn" type="submit" name="action" value="set_date">Set</button>
+    </form>
+    <form method="post" class="row" style="--gap:8px">{% csrf_token %}
+      <button class="btn btn-primary" type="submit" name="action" value="next_day">Move to next day and run jobs</button>
+      <button class="btn" type="submit" name="action" value="run">Run daily jobs now</button>
+    </form>
+    <p class="help">Daily jobs = send reminders that are due (skipping any whose balance is now ₹0) and re-score dropout risk.</p>
+  </section>
+  <section class="card card-pad stack">
+    <h2>Next reminders</h2>
+    {% for r in upcoming %}<div class="kv"><span>{{ r.send_on|date:"j M" }} · {{ r.instalment.plan.student.name }}</span><span>{{ r.label }}</span></div>
+    {% empty %}<p class="muted small">None scheduled.</p>{% endfor %}
+  </section>
+</div>
+{% endblock %}

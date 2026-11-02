@@ -1,0 +1,56 @@
+{% extends "office/base.html" %}
+{% load ui %}
+{% block title %}Counsellor tasks{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="crumb">Counsellor{% if request.user.centre %} · {{ request.user.centre }}{% endif %}</div><h1>Call tasks</h1></div>
+  <p class="small muted">{{ open_tasks|length }} open · {{ false_count }} marked false so far</p></div>
+<div class="split">
+  <section class="card" aria-label="Open tasks" style="overflow:hidden">
+    {% for t in open_tasks %}
+    <a href="{% url 'office:task' t.pk %}" {% if task and t.pk == task.pk %}aria-current="true"{% endif %} style="display:block;padding:14px 18px;border-top:{% if forloop.first %}0{% else %}1px solid #EEF0F2{% endif %};color:var(--ink);text-decoration:none;{% if task and t.pk == task.pk %}background:var(--accent-soft){% endif %}">
+      <div class="row between" style="--gap:8px"><strong>{{ t.student.name }}</strong><span class="small" style="{% if t.assessment.score >= 0.6 %}color:var(--warn);font-weight:600{% endif %}">{% if t.assessment.score >= 0.6 %}High{% else %}Medium{% endif %} · {{ t.assessment.score|floatformat:2 }}</span></div>
+      <div class="small muted">{{ t.student.batch.name }} · flagged {{ t.created_at|date:"j M" }}</div>
+    </a>
+    {% empty %}<div class="empty"><strong>No open tasks</strong>New flags appear here after the daily scoring run.</div>{% endfor %}
+  </section>
+
+  <section class="card card-pad stack wide">
+    {% if task %}
+    <div class="row between">
+      <div><h2 style="font-size:20px">{{ task.student.name }}</h2><p class="small muted">{{ task.student.batch.name }} · parent {{ task.student.parent.phone }} · prefers {{ task.student.parent.get_preferred_language_display }}</p></div>
+      <div class="right"><div class="small muted">Dropout risk</div><div style="font-size:26px;font-weight:700;{% if task.assessment.score >= 0.6 %}color:var(--warn){% endif %}">{{ task.assessment.score|floatformat:2 }}</div></div>
+    </div>
+    <div class="stack" style="--gap:12px">
+      <h3>Why it was flagged</h3>
+      {% for c in reasons %}
+      <div class="impact"><span>{{ c.label }}</span><span class="track" aria-hidden="true"><span style="width:{{ c.width }}%"></span></span><span class="right muted num">+{{ c.points|floatformat:2 }}</span></div>
+      {% empty %}<p class="small muted">No single factor stands out; the score comes from several small ones.</p>{% endfor %}
+      <p class="help">Model {{ task.assessment.model_version }} · flags at {{ model.threshold }} and above · trained on a synthetic population until real withdrawal history is loaded. This flag only creates this call task. It never changes fees or messages the parent.</p>
+    </div>
+    {% if task.status == 'open' %}
+    <div class="hr"></div>
+    <form method="post" action="{% url 'office:task_close' task.pk %}" class="stack">
+      {% csrf_token %}
+      <h3>Record the call</h3>
+      <div class="form-grid">
+        <div class="field"><label for="id_outcome">Outcome</label>{{ form.outcome }}</div>
+        <div class="field"><label for="id_notes">Notes</label>{{ form.notes }}</div>
+      </div>
+      <div class="row" style="--gap:8px">
+        <button class="btn btn-primary" type="submit" name="action" value="done">Save and close task</button>
+        <button class="btn" type="submit" name="action" value="false_flag" formnovalidate>Mark as false flag</button>
+      </div>
+    </form>
+    {% else %}<div class="alert alert-info">Closed {{ task.closed_at|date:"j M" }} by {{ task.closed_by.display_name }}: {{ task.outcome }}</div>{% endif %}
+    {% else %}
+    <div class="empty"><strong>Nothing to call about</strong>When a student's fees, attendance and test trend point to dropping out, a task appears here.</div>
+    {% endif %}
+  </section>
+</div>
+{% if closed %}
+<section class="card"><div class="card-head"><h2>Recently closed</h2></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Student</th><th>Outcome</th><th>Score</th><th>Closed</th></tr></thead><tbody>
+{% for t in closed %}<tr><td><a class="rowlink" href="{% url 'office:task' t.pk %}">{{ t.student.name }}</a></td><td>{% if t.status == 'false_flag' %}<span class="badge badge-neutral">False flag</span>{% else %}{{ t.outcome }}{% endif %}</td><td class="num">{{ t.assessment.score|floatformat:2 }}</td><td class="small">{{ t.closed_at|date:"j M" }}</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endif %}
+{% endblock %}

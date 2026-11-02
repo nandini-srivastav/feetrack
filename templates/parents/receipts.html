@@ -1,0 +1,23 @@
+{% extends "parents/base.html" %}
+{% load ui %}
+{% block title %}{{ t.receipts }}{% endblock %}
+{% block content %}
+{% include "parents/_child.html" %}
+<section aria-labelledby="r-head">
+  <h2 id="r-head" style="font-size:16px;margin-bottom:4px">{{ t.receipts }}</h2>
+  {% for p in payments %}
+    <div class="line-item">
+      <div class="grow">
+        <p style="font-weight:500">{{ p.received_on|date:"j M Y" }} · {{ p.get_method_display }}</p>
+        <p class="muted small">{% for a in p.allocations.all %}{{ t.instalment }} {{ a.instalment.number }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if p.receipt %} · {{ p.receipt.number }}{% endif %}</p>
+      </div>
+      <div class="stack" style="--gap:4px;align-items:flex-end">
+        <strong class="num">{{ p.amount|inr }}</strong>
+        {% if p.receipt %}<a class="small" href="{% url 'parents:receipt_pdf' p.receipt.number %}">{{ t.download }}</a>{% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty"><strong>{{ t.no_receipts }}</strong></div>
+  {% endfor %}
+</section>
+{% endblock %}

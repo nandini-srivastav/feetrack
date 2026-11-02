@@ -1,0 +1,9 @@
+<div class="stack" style="--gap:2px">
+  <h1 style="font-size:22px">{{ child.name }}</h1>
+  <p class="muted small">{{ child.batch.name }} · {{ child.student_id }}</p>
+  {% if children|length > 1 %}
+  <nav class="row" style="--gap:6px;margin-top:8px" aria-label="{{ t.switch_child }}">
+    {% for c in children %}<a class="btn btn-sm" href="?child={{ c.student_id }}" {% if c.pk == child.pk %}aria-current="true" style="border-color:var(--accent);color:var(--accent-ink)"{% endif %}>{{ c.name|truncatewords:1 }}</a>{% endfor %}
+  </nav>
+  {% endif %}
+</div>

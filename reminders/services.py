@@ -93,7 +93,7 @@ def dispatch_due(today):
                 counts["superseded"] += 1
             link = fee_services.get_or_create_link(inst)
             OutboundMessage.objects.create(
-                to_phone=student.parent.phone or "", language=student.parent.preferred_language,
+                student=student, to_phone=student.parent.phone or "", language=student.parent.preferred_language,
                 kind=OutboundMessage.Kind.REMINDER, body=reminder_text(latest, link.token, today), reminder=latest)
             latest.status = Reminder.Status.SENT
             latest.sent_at = timezone.now()
@@ -108,5 +108,19 @@ def send_receipt_message(payment, receipt):
         body = f"{format_inr(payment.amount)} प्राप्त हुए। रसीद {receipt.number}. धन्यवाद।"
     else:
         body = f"Received {format_inr(payment.amount)}. Receipt {receipt.number}. Thank you."
-    OutboundMessage.objects.create(to_phone=parent.phone or "", language=parent.preferred_language,
-                                   kind=OutboundMessage.Kind.RECEIPT, body=body)
+    OutboundMessage.objects.create(student=payment.student, to_phone=parent.phone or "",
+                                   language=parent.preferred_language, kind=OutboundMessage.Kind.RECEIPT, body=body)
+
+
+def send_pay_link(instalment, link):
+    """Staff-triggered: text the parent a link for one instalment now."""
+    student = instalment.plan.student
+    parent = student.parent
+    amount = format_inr(link.amount)
+    first = student.name.split()[0]
+    if parent.preferred_language == "hi":
+        body = f"{first} की फ़ीस {amount} के भुगतान का लिंक: {pay_url(link.token)}"
+    else:
+        body = f"Payment link for {first}'s fee of {amount}: {pay_url(link.token)}"
+    return OutboundMessage.objects.create(student=student, to_phone=parent.phone or "", language=parent.preferred_language,
+                                          kind=OutboundMessage.Kind.REMINDER, body=body)

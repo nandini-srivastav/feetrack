@@ -1,0 +1,19 @@
+{% extends "office/base.html" %}
+{% load ui %}
+{% block title %}Refunds{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Refunds</h1><p class="muted small">Start a refund from a student's ledger. Each refund must be paid within 10 days.</p></div>
+  <a class="btn" href="{% url 'office:students' %}">Find a student</a></div>
+<section class="card">
+  {% if refunds %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Student</th><th>Last day</th><th>Reason</th><th class="right">Refund</th><th>Pay by</th><th>Approved by</th></tr></thead>
+    <tbody>{% for r in refunds %}<tr>
+      <td><a class="rowlink" href="{% url 'office:ledger' r.student.student_id %}">{{ r.student.name }}</a><div class="small muted">{{ r.student.student_id }}</div></td>
+      <td>{{ r.last_day|date:"j M Y" }}</td><td>{{ r.reason }}</td><td class="right num"><strong>{{ r.refund_due|inr }}</strong></td>
+      <td>{% if r.pay_by < TODAY %}<span class="badge badge-warn">{{ r.pay_by|date:"j M" }} · late</span>{% else %}{{ r.pay_by|date:"j M Y" }}{% endif %}</td>
+      <td class="small">{{ r.approved_by.display_name }}<div class="muted">policy {{ r.policy.version }}</div></td>
+    </tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty"><strong>No refunds yet</strong>When a student leaves, open their ledger and choose “Start refund”.</div>{% endif %}
+</section>
+{% endblock %}

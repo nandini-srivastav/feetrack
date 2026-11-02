@@ -1,23 +1,18 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from django.views.generic import TemplateView
+
+from parents import views as parent_views
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("", TemplateView.as_view(template_name="landing.html"), name="landing"),
+    path("parent/", include("parents.urls")),
+    path("office/", include("office.urls")),
+    path("pay/<str:token>/", parent_views.pay, name="pay"),
+    path("pay/<str:token>/done/", parent_views.pay_done, name="pay_done"),
+    path("webhooks/gateway/", parent_views.gateway_webhook, name="gateway_webhook"),
+    path("django-admin/", admin.site.urls),
 ]
+
+handler403 = "core.views.forbidden"
+handler404 = "core.views.not_found"

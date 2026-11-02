@@ -1,0 +1,84 @@
+{% extends "office/base.html" %}
+{% load ui %}
+{% block title %}Dues dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{% if request.user.sees_all_centres %}Dues across {% if centre_filter %}{{ centre_filter }}{% else %}all centres{% endif %}{% else %}Dues · {{ request.user.centre }}{% endif %}</h1>
+    <p class="muted small">As of {{ TODAY|date:"j M Y" }}</p>
+  </div>
+  {% if centres %}
+  <form method="get" class="row" style="--gap:8px" data-no-busy>
+    <label for="f-centre" class="small">Centre</label>
+    <select id="f-centre" name="centre" class="input" style="width:auto" onchange="this.form.submit()">
+      <option value="">All centres</option>
+      {% for c in centres %}<option value="{{ c.code }}" {% if c.code == centre_filter %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <noscript><button class="btn" type="submit">Show</button></noscript>
+  </form>
+  {% endif %}
+</div>
+
+<section class="kpis" aria-label="Key numbers">
+  <div class="card card-pad kpi {% if d.overdue %}card-warn{% endif %}">
+    <div class="label">Overdue now</div><div class="value num">{{ d.overdue|lakh }}</div>
+    <div class="sub">{{ d.overdue_students }} student{{ d.overdue_students|pluralize }}</div>
+  </div>
+  <div class="card card-pad kpi">
+    <div class="label">Over 60 days late</div><div class="value num">{{ d.over60|lakh }}</div>
+    <div class="sub">{% if d.over60_share_of_billed is not None %}{{ d.over60_share_of_billed|floatformat:1 }}% of fees billed so far · target 6%{% else %}Nothing billed yet{% endif %}</div>
+  </div>
+  <div class="card card-pad kpi">
+    <div class="label">Collected of billed to date</div><div class="value num">{% if d.collection_rate is not None %}{{ d.collection_rate|floatformat:1 }}%{% else %}—{% endif %}</div>
+    <div class="sub">{{ d.collected|lakh }} of {{ d.billed|lakh }}</div>
+  </div>
+  <div class="card card-pad kpi">
+    <div class="label">Falling due in 14 days</div><div class="value num">{{ d.due_next_14|lakh }}</div>
+    <div class="sub">Reminders are scheduled</div>
+  </div>
+</section>
+
+<section class="card card-pad stack" aria-labelledby="ageing-h">
+  <div class="row between">
+    <h2 id="ageing-h">Overdue by centre and age</h2>
+    <div class="legend" aria-hidden="true"><span><i class="sw age-1"></i>1–30 days</span><span><i class="sw age-2"></i>31–60</span><span><i class="sw age-3"></i>61–90</span><span><i class="sw age-4"></i>90+</span></div>
+  </div>
+  {% if d.centres %}
+  <div class="bars">
+    {% for c in d.centres %}
+    <a class="bar-row" href="{% url 'office:students' %}?status=overdue" aria-label="{{ c.centre.name }}: {{ c.total|inr }} overdue — {% for s in c.segments %}{{ s.label }} days {{ s.amount|inr }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+      <span class="bar-name small">{{ c.centre.name }}</span>
+      <span class="bar">{% for s in c.segments %}{% if s.amount %}<span class="{{ s.cls }}" style="width:{{ s.width|floatformat:2 }}%" title="{{ s.label }} days: {{ s.amount|inr }}"></span>{% endif %}{% endfor %}</span>
+      <span class="right small num"><strong>{{ c.total|lakh }}</strong></span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><strong>Nothing is overdue</strong>Every instalment due so far has been paid.</div>
+  {% endif %}
+</section>
+
+<section class="card" aria-labelledby="batch-h">
+  <div class="card-head"><h2 id="batch-h">Overdue by batch</h2><a class="small" href="{% url 'office:students' %}?status=overdue">See students</a></div>
+  {% if d.batches %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Batch</th>{% if request.user.sees_all_centres %}<th>Centre</th>{% endif %}<th class="right">Students overdue</th><th class="right">Overdue</th><th class="right">Over 60 days</th></tr></thead>
+    <tbody>{% for b in d.batches %}<tr>
+      <td><a class="rowlink" href="{% url 'office:students' %}?status=overdue&batch={{ b.batch.pk }}">{{ b.batch.name }}</a></td>
+      {% if request.user.sees_all_centres %}<td>{{ b.batch.centre.name }}</td>{% endif %}
+      <td class="right num">{{ b.students }}</td><td class="right num">{{ b.overdue|inr }}</td><td class="right num">{{ b.over60|inr }}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty"><strong>No overdue batches</strong></div>{% endif %}
+</section>
+
+<section class="card card-pad stack" aria-labelledby="exp-h">
+  <h2 id="exp-h">Export receipts for Tally</h2>
+  <form method="get" action="{% url 'office:tally_export' %}" class="row" style="align-items:flex-end" data-no-busy>
+    <div class="field"><label for="id_start">From</label>{{ export_form.start }}</div>
+    <div class="field"><label for="id_end">To</label>{{ export_form.end }}</div>
+    <button class="btn" type="submit">Download CSV</button>
+  </form>
+  <p class="help">One receipt voucher per row with GST split, ready for the Tally import template.</p>
+</section>
+{% endblock %}
