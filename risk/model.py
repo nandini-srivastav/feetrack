@@ -31,14 +31,29 @@ def score(row):
         z += coef * filled
         impact = coef * (filled - mean)  # vs. an average student
         contributions.append({"feature": name, "value": value, "impact": round(impact, 3)})
-    p = 1 / (1 + math.exp(-z))
-    # Convert log-odds impacts into approximate probability points for display.
-    slope = p * (1 - p)
+    p = sigmoid(z)
+    # Share the gap between this student's score and a typical student's
+    # score across the factors, in proportion to each factor's log-odds.
+    # Unlike a local slope (p*(1-p), which shrinks to ~0 near p=1), these
+    # points always add up to what the counsellor sees on screen.
+    base = baseline()
+    total_impact = sum(c["impact"] for c in contributions)
     for c in contributions:
-        c["points"] = round(c["impact"] * slope, 2)
+        share = c["impact"] / total_impact if abs(total_impact) > 1e-9 else 0.0
+        c["points"] = round((p - base) * share, 3)
         c["label"] = describe(c["feature"], row.context) if c["value"] is not None else None
     contributions.sort(key=lambda c: c["impact"], reverse=True)
     return p, contributions
+
+
+def sigmoid(z):
+    return 1 / (1 + math.exp(-z))
+
+
+def baseline():
+    """Score of a student whose every input equals the training average."""
+    m = load()
+    return sigmoid(m["intercept"] + sum(m["coefficients"][f] * m["feature_means"][f] for f in FEATURES))
 
 
 def describe(feature, ctx):

@@ -113,3 +113,19 @@ def test_missing_inputs_are_neutral():
     p, contribs = model.score(row)
     assert all(c["impact"] == 0 for c in contribs)
     assert 0 < p < 1
+
+
+def test_explanation_points_add_up_to_score_even_when_score_is_extreme():
+    """Regression: a local-slope conversion showed ~+0.05 of reasons for a
+    0.99 score. Points must always sum to score minus the typical score."""
+    from risk import model
+    from risk.features import FEATURES, FeatureRow
+
+    for values in [
+        {"overdue_months": 4.0, "missed_instalments": 2.0, "attendance_gap": 0.2, "attendance_drop": 0.0, "score_drop": 0.0},
+        {"overdue_months": 0.0, "missed_instalments": 0.0, "attendance_gap": 0.05, "attendance_drop": 0.0, "score_drop": 0.0},
+        {"overdue_months": 0.8, "missed_instalments": 1.0, "attendance_gap": 0.32, "attendance_drop": 0.24, "score_drop": 0.1},
+    ]:
+        p, parts = model.score(FeatureRow(values=values, context={}, missing=[]))
+        assert abs(sum(c["points"] for c in parts) - (p - model.baseline())) < 0.01
+        assert len(parts) == len(FEATURES)

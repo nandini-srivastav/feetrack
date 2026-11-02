@@ -292,17 +292,19 @@ def tasks(request, pk=None):
     qs = scope_by_centre(request.user, CounsellorTask.objects.select_related("student__batch", "assessment"))
     open_tasks = list(qs.filter(status="open").order_by("-assessment__score"))
     task = get_object_or_404(qs, pk=pk) if pk else (open_tasks[0] if open_tasks else None)
+    from risk import model
     reasons = []
     if task:
-        reasons = [c for c in task.assessment.contributions if c["impact"] > 0.02 and c.get("label")]
-        top = max((c["impact"] for c in reasons), default=1) or 1
+        # Points are shares of (score - typical score); show the factors that
+        # pushed this student up, scaled against the largest one.
+        reasons = [c for c in task.assessment.contributions if c.get("points", 0) >= 0.01 and c.get("label")]
+        top = max((c["points"] for c in reasons), default=1) or 1
         for c in reasons:
-            c["width"] = round(min(100, c["impact"] / top * 100))
-    from risk import model
+            c["width"] = round(min(100, c["points"] / top * 100))
     closed = qs.exclude(status="open").order_by("-closed_at")[:8]
     return page(request, "office/tasks.html", {
         "open_tasks": open_tasks, "task": task, "reasons": reasons, "closed": closed,
-        "form": forms.CloseTaskForm(), "model": model.load(),
+        "form": forms.CloseTaskForm(), "model": model.load(), "baseline": model.baseline(),
         "false_count": qs.filter(status="false_flag").count(),
     }, "tasks")
 

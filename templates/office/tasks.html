@@ -25,6 +25,7 @@
       {% for c in reasons %}
       <div class="impact"><span>{{ c.label }}</span><span class="track" aria-hidden="true"><span style="width:{{ c.width }}%"></span></span><span class="right muted num">+{{ c.points|floatformat:2 }}</span></div>
       {% empty %}<p class="small muted">No single factor stands out; the score comes from several small ones.</p>{% endfor %}
+      <p class="small muted">A typical student scores {{ baseline|floatformat:2 }}. The factors above add the rest, up to {{ task.assessment.score|floatformat:2 }}.</p>
       <p class="help">Model {{ task.assessment.model_version }} · flags at {{ model.threshold }} and above · trained on a synthetic population until real withdrawal history is loaded. This flag only creates this call task. It never changes fees or messages the parent.</p>
     </div>
     {% if task.status == 'open' %}
