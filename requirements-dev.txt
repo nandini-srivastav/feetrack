@@ -1,0 +1,7 @@
+# Tests and retraining the risk model. Not needed to run the app:
+# the trained coefficients ship in risk/model.json.
+-r requirements.txt
+pytest==9.1.1
+pytest-django==4.14.0
+numpy==2.5.3
+scikit-learn==1.9.1

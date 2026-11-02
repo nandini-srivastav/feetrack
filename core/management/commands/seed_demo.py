@@ -5,7 +5,7 @@ applying payments on the days they happen and running the reminder job
 each day, so reminder history, receipts and ageing are all produced by
 the real code paths rather than typed in.
 
-Usage:  python manage.py seed_demo [--reset]
+Usage:  python manage.py seed_demo [--reset | --if-empty]
 Demo staff password comes from DEMO_PASSWORD (or is generated and printed).
 """
 import os
@@ -51,8 +51,13 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--reset", action="store_true", help="Delete existing data first")
         parser.add_argument("--students", type=int, default=160)
+        parser.add_argument("--if-empty", action="store_true",
+                            help="Seed only when the database has no students (safe on every deploy)")
 
-    def handle(self, *args, reset, students, **opts):
+    def handle(self, *args, reset, students, if_empty=False, **opts):
+        if if_empty and Student.objects.exists():
+            self.stdout.write("Data already present; seed skipped.")
+            return
         if Student.objects.exists() and not reset:
             raise CommandError("Data already exists. Use --reset to replace it.")
         self.rng = random.Random(2026)
