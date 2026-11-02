@@ -105,4 +105,4 @@ The demo date is fixed at **Mon 2 Nov 2026**, the date the brief's sample data i
 3. On Aarav's ledger, choose **Start refund**. The amount is worked out from the published policy and cannot be typed over.
 4. Open **Unmatched payments**. Payments that could not be tied to an instalment wait here for a person to confirm.
 5. Sign in as `counsellor`. Each flag shows the factors behind its score and can be marked as a false flag.
-6. In **Demo controls**, move to the next day. Due reminders go out, and any for a cleared balance are skipped.
+6. In **Demo controls**, set the date to 12 Nov 2026 and choose **Run daily jobs now**. The 3-days-before reminders for the 15 Nov NEET instalments go out; see them in **Messages sent**. Pay one of those instalments as its parent (e.g. Mohit), and the rest of his reminders for it show as cancelled on his ledger.
