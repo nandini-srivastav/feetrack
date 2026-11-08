@@ -96,7 +96,8 @@ class Command(BaseCommand):
             version="v1.0", published_on=date(2026, 4, 1), is_active=True, non_refundable_amount=D("0"), payout_days=10,
             summary=("If a student leaves, we keep the fee for the days the course ran up to and including the last "
                      "day attended, counted from course start, and refund the rest of what was paid within 10 days."))
-        self.centres = [Centre.objects.create(code=f"JPR{i}", name=f"Centre {i}", gstin="[INSTITUTE GSTIN]")
+        # Placeholder GSTIN: 15 characters like a real one (08 = Rajasthan), clearly not a real registration.
+        self.centres = [Centre.objects.create(code=f"JPR{i}", name=f"Centre {i}", gstin="08XXXXX0000X1Z0")
                         for i in range(1, 5)]
         self.batches = {}
         for c in self.centres:

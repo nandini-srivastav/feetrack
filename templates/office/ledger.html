@@ -96,7 +96,7 @@
 
 {% if task %}
 <section class="card card-pad row between">
-  <div class="small"><strong>Dropout-risk flag raised {{ task.created_at|date:"j M" }} (score {{ task.assessment.score|floatformat:2 }}).</strong> <span class="muted">A counsellor call task was created. No fee action is taken from this flag.</span></div>
+  <div class="small"><strong>Dropout-risk flag raised {{ task.assessment.assessed_on|date:"j M" }} (score {{ task.assessment.score|floatformat:2 }}).</strong> <span class="muted">A counsellor call task was created. No fee action is taken from this flag.</span></div>
   {% if request.user.role == 'director' %}<a class="small" href="{% url 'office:task' task.pk %}">View task</a>{% endif %}
 </section>
 {% endif %}

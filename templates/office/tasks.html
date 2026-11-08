@@ -9,7 +9,7 @@
     {% for t in open_tasks %}
     <a href="{% url 'office:task' t.pk %}" {% if task and t.pk == task.pk %}aria-current="true"{% endif %} style="display:block;padding:14px 18px;border-top:{% if forloop.first %}0{% else %}1px solid #EEF0F2{% endif %};color:var(--ink);text-decoration:none;{% if task and t.pk == task.pk %}background:var(--accent-soft){% endif %}">
       <div class="row between" style="--gap:8px"><strong>{{ t.student.name }}</strong><span class="small" style="{% if t.assessment.score >= 0.6 %}color:var(--warn);font-weight:600{% endif %}">{% if t.assessment.score >= 0.6 %}High{% else %}Medium{% endif %} · {{ t.assessment.score|floatformat:2 }}</span></div>
-      <div class="small muted">{{ t.student.batch.name }} · flagged {{ t.created_at|date:"j M" }}</div>
+      <div class="small muted">{{ t.student.batch.name }} · flagged {{ t.assessment.assessed_on|date:"j M" }}</div>
     </a>
     {% empty %}<div class="empty"><strong>No open tasks</strong>New flags appear here after the daily scoring run.</div>{% endfor %}
   </section>
